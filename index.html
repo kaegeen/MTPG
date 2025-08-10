@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mood-to-Plan Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-xl mx-auto bg-white rounded shadow p-6">
+    <h1 class="text-2xl font-bold text-center mb-4">Mood-to-Plan Generator</h1>
+    <p class="text-center mb-4">Select your current mood to get a custom 3-hour plan.</p>
+    
+    <div class="flex flex-wrap gap-2 justify-center mb-6">
+      <button class="mood-btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-mood="Energetic">Energetic</button>
+      <button class="mood-btn bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" data-mood="Tired">Tired</button>
+      <button class="mood-btn bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600" data-mood="Bored">Bored</button>
+      <button class="mood-btn bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700" data-mood="Creative">Creative</button>
+    </div>
+
+    <div id="planBox" class="hidden">
+      <h2 class="text-lg font-semibold mb-2">Your Plan:</h2>
+      <ul id="planList" class="list-disc list-inside mb-4"></ul>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold mb-2">Mood History:</h2>
+      <ul id="historyList" class="list-disc list-inside text-sm text-gray-600"></ul>
+    </div>
+  </div>
+
+  <script>
+    const activities = {
+      Energetic: [
+        "30 min workout",
+        "Tidy up workspace",
+        "Work on a personal project",
+        "Take a 15 min walk",
+        "Hydrate well"
+      ],
+      Tired: [
+        "10 min meditation",
+        "Light stretching",
+        "Watch a short documentary",
+        "Drink herbal tea",
+        "Listen to calming music"
+      ],
+      Bored: [
+        "Learn a new skill on YouTube",
+        "Play a brain game",
+        "Try a new recipe",
+        "Go outside and people-watch",
+        "Write down 5 goals"
+      ],
+      Creative: [
+        "Sketch for 20 minutes",
+        "Write a poem or short story",
+        "Make a photo collage",
+        "Experiment with music",
+        "Design something in Canva"
+      ]
+    };
+
+    const history = JSON.parse(localStorage.getItem("moodHistory")) || [];
+
+    document.querySelectorAll(".mood-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mood = btn.dataset.mood;
+        const plan = generatePlan(mood);
+        saveMood(mood, plan);
+        renderPlan(plan);
+        renderHistory();
+      });
+    });
+
+    function generatePlan(mood) {
+      let planItems = [];
+      const list = [...activities[mood]];
+      for (let i = 0; i < 3; i++) {
+        const random = Math.floor(Math.random() * list.length);
+        planItems.push(list.splice(random, 1)[0]);
+      }
+      return planItems;
+    }
+
+    function saveMood(mood, plan) {
+      history.unshift({ mood, plan, date: new Date().toLocaleString() });
+      if (history.length > 10) history.pop();
+      localStorage.setItem("moodHistory", JSON.stringify(history));
+    }
+
+    function renderPlan(plan) {
+      const planBox = document.getElementById("planBox");
+      const planList = document.getElementById("planList");
+      planList.innerHTML = "";
+      plan.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        planList.appendChild(li);
+      });
+      planBox.classList.remove("hidden");
+    }
+
+    function renderHistory() {
+      const historyList = document.getElementById("historyList");
+      historyList.innerHTML = "";
+      history.forEach(entry => {
+        const li = document.createElement("li");
+        li.textContent = `${entry.date} — Mood: ${entry.mood}`;
+        historyList.appendChild(li);
+      });
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>
